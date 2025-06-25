@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const gameContainer = document.getElementById('game-container');
     const player = document.getElementById('player');
-    const jumpButton = document.getElementById('jump-button');
     const scoreDisplay = document.getElementById('score-display');
     const gameOverScreen = document.getElementById('game-over-screen');
     const finalScoreDisplay = document.getElementById('final-score');
@@ -14,7 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const jumpPower = 20;
     const gameSpeed = 7;
     const platformHeight = 20;
-    const collectibleSize = 50;
+    const collectibleSize = 70;
+    const balloonSize = 100;
 
     // Game state
     let playerBottom, playerLeft, playerVelocityY;
@@ -39,12 +39,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function createCollectible(type, left, bottom) {
         const collectible = document.createElement('div');
         collectible.classList.add('collectible', type);
-        collectible.style.width = `${collectibleSize}px`;
-        collectible.style.height = `${collectibleSize}px`;
+        const size = type === 'balloon' ? balloonSize : collectibleSize;
+        collectible.style.width = `${size}px`;
+        collectible.style.height = `${size}px`;
         collectible.style.left = `${left}px`;
         collectible.style.bottom = `${bottom}px`;
         gameContainer.appendChild(collectible);
-        return { type, element: collectible, left, bottom, collected: false };
+        return { type, element: collectible, left, bottom, collected: false, size };
     }
 
     function initializeGame() {
@@ -92,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const newCollectible = createCollectible(collectibleType, platformLeft + platformWidthRand / 2 - collectibleSize / 2, platformBottom + platformHeight + 15);
                 gameElements.push(newCollectible);
             } else if (collectibleChoice > 0.4) {
-                const balloonLeft = platformLeft + platformWidthRand / 2 - collectibleSize / 2;
+                const balloonLeft = platformLeft + platformWidthRand / 2 - balloonSize / 2;
                 const balloonBottom = Math.random() * 200 + 250; // Higher up
                 const newBalloon = createCollectible('balloon', balloonLeft, balloonBottom);
                 gameElements.push(newBalloon);
@@ -123,10 +124,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (gameOver) return;
 
         // Apply gravity
+        playerVelocityY -= gravity;
         if (hasBalloon) {
-            playerVelocityY -= gravity * -0.3; // Negative multiplier provides lift
-        } else {
-            playerVelocityY -= gravity;
+            const lift = gravity * (1.15 + (Math.random() - 0.5) * 0.6);
+            playerVelocityY += lift;
         }
         playerBottom += playerVelocityY;
 
@@ -159,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const newCollectible = createCollectible(collectibleType, platformLeft + platformWidthRand / 2 - collectibleSize / 2, platformBottom + platformHeight + 15);
                 gameElements.push(newCollectible);
             } else if (collectibleChoice > 0.4) {
-                const balloonLeft = platformLeft + platformWidthRand / 2 - collectibleSize / 2;
+                const balloonLeft = platformLeft + platformWidthRand / 2 - balloonSize / 2;
                 const balloonBottom = Math.random() * 200 + 250; // Higher up
                 const newBalloon = createCollectible('balloon', balloonLeft, balloonBottom);
                 gameElements.push(newBalloon);
@@ -168,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Clean up off-screen elements
         gameElements = gameElements.filter(item => {
-            const itemRight = item.type === 'platform' ? item.left + item.width : item.left + collectibleSize;
+            const itemRight = item.type === 'platform' ? item.left + item.width : item.left + item.size;
             if (itemRight < 0 || (item.collected && item !== attachedBalloon)) {
                 item.element.remove();
                 return false;
@@ -201,9 +202,9 @@ document.addEventListener('DOMContentLoaded', () => {
         gameElements.forEach(item => {
             if (item.type === 'cheese' || item.type === 'bone') {
                 if (!item.collected &&
-                    playerLeft < item.left + collectibleSize &&
+                    playerLeft < item.left + item.size &&
                     playerLeft + playerWidth > item.left &&
-                    playerBottom < item.bottom + collectibleSize &&
+                    playerBottom < item.bottom + item.size &&
                     playerBottom + playerHeight > item.bottom
                 ) {
                     item.collected = true;
@@ -212,9 +213,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else if (item.type === 'balloon') {
                 if (!item.collected && !hasBalloon &&
-                    playerLeft < item.left + collectibleSize &&
+                    playerLeft < item.left + item.size &&
                     playerLeft + playerWidth > item.left &&
-                    playerBottom < item.bottom + collectibleSize &&
+                    playerBottom < item.bottom + item.size &&
                     playerBottom + playerHeight > item.bottom
                 ) {
                     hasBalloon = true;
@@ -230,9 +231,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (hasBalloon && attachedBalloon) {
             attachedBalloon.bottom = playerBottom + playerHeight - 30;
-            attachedBalloon.left = playerLeft + (playerWidth / 2) - (collectibleSize / 2);
+            attachedBalloon.left = playerLeft + (playerWidth / 2) - (attachedBalloon.size / 2);
             attachedBalloon.element.style.bottom = `${attachedBalloon.bottom}px`;
             attachedBalloon.element.style.left = `${attachedBalloon.left}px`;
+        }
+
+        // Pop balloon if it goes too high
+        if (hasBalloon && (playerBottom + playerHeight / 2 > window.innerHeight)) {
+            hasBalloon = false;
+            if (attachedBalloon) {
+                attachedBalloon.collected = true;
+                attachedBalloon = null;
+            }
         }
 
         // Check for game over
@@ -251,7 +261,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event Listeners
-    jumpButton.addEventListener('click', jump);
     document.addEventListener('keydown', (e) => {
         if (e.code === 'Space') {
             e.preventDefault();

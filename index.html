@@ -8,7 +8,7 @@
             body {
                 overflow: hidden;
                 margin: 0;
-                background-color: #87ceeb; /* Sky blue background */
+                background-color: rgb(188, 188, 188);
                 font-family: Arial, sans-serif;
                 color: #333;
             }
@@ -20,6 +20,7 @@
                 overflow: hidden;
                 border: 2px solid #555;
                 box-sizing: border-box;
+                background-color: #87ceeb; /* Sky blue background */
             }
 
             .platform {
@@ -64,21 +65,6 @@
                 background-image: url("balloon.png");
             }
 
-            #jump-button {
-                position: absolute;
-                bottom: 20px;
-                right: 20px;
-                padding: 15px 30px;
-                font-size: 20px;
-                background-color: #4caf50; /* Green button */
-                color: white;
-                border: none;
-                border-radius: 10px;
-                cursor: pointer;
-                z-index: 100;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            }
-
             #score-display {
                 position: absolute;
                 top: 20px;
@@ -108,7 +94,7 @@
             }
 
             #game-over-screen button {
-                margin-top: 20px;
+                margin-top: 5px;
                 padding: 10px 20px;
                 font-size: 24px;
                 background-color: #007bff;
@@ -117,18 +103,22 @@
                 border-radius: 5px;
                 cursor: pointer;
             }
+
+            #game-over-screen img {
+                width: 250px;
+            }
         </style>
     </head>
     <body>
         <div id="game-container">
             <div id="player"></div>
-            <button id="jump-button">Jump!</button>
             <div id="score-display">Score: 0</div>
         </div>
 
         <div id="game-over-screen">
             <h2>Game Over!</h2>
             <p id="final-score">Your Score: 0</p>
+            <img src="endgame.png" alt="Game Over">
             <button id="restart-button">Play Again</button>
         </div>
 
