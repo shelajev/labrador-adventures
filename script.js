@@ -1,5 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
     const gameContainer = document.getElementById('game-container');
+
+    // Set game container to visible window size
+    function setGameSize() {
+        gameContainer.style.height = `${window.innerHeight}px`;
+        gameContainer.style.width = `${window.innerWidth}px`;
+    }
+
+    window.addEventListener('resize', setGameSize);
+    setGameSize();
+    
     const player = document.getElementById('player');
     const jumpButton = document.getElementById('jump-button');
     const scoreDisplay = document.getElementById('score-display');
